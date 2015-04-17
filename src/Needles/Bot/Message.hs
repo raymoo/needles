@@ -40,7 +40,7 @@ import           Control.Monad
 import           Data.Text               (Text)
 import qualified Network.WebSockets as WS
 
--- First argument is what to do with received messages. Second argument is
+-- | First argument is what to do with received messages. Second argument is
 -- what to do if there is an error. Third argument is how many microseconds to
 -- wait between processing messages. Returns a Chan to send to.
 mkMessageQueue :: Exception e => (a -> IO ()) -> (e -> IO ()) -> Int
@@ -52,7 +52,7 @@ mkMessageQueue action handler delay = do
   where messageLoop channel =
           forever $ readChan channel >>= action >> threadDelay delay
 
--- Creates a queue to send pokemon showdown messages on the provided websocket
+-- | Creates a queue to send pokemon showdown messages on the provided websocket
 -- connection.
 mkPSQueue :: Exception e => WS.Connection -> (e -> IO ())
              -> IO (Text -> IO (), ThreadId)

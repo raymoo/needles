@@ -44,11 +44,15 @@ loginServer = "http://play.pokemonshowdown.com/action.php"
 requestType :: String
 requestType = "application/x-www-form-urlencoded"
 
+
+-- | User login information
 data LoginInfo =
   LoginInfo { liUsername :: String
             , liPassword :: String
             }
 
+
+-- | Challenge data
 data Challenge =
   Challenge { challKey :: String
             , challStr :: String
@@ -80,7 +84,7 @@ valueToString js = case result of
                     Error _ -> Nothing
   where result = readJSON js
 
--- Make the request
+-- | Makes a login request, and possibly returns an assertion.
 getAssertion :: LoginInfo -> Challenge -> IO (Maybe String)
 getAssertion li chall = do
   response <- simpleHTTP $ postRequestWithBody loginServer requestType requestString
