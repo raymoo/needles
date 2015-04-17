@@ -34,6 +34,8 @@ module Needles.Bot.Configuration (
                                  , mainPath
                                  ) where
 
+import Needles.Bot.Trigger
+
 -- | The configuration for a ps bot.
 data Configuration =
   Configuration { cUsername :: String
@@ -41,8 +43,9 @@ data Configuration =
                 , cServer   :: String    -- ^ The server address
                 , cPort     :: Int       -- ^ The server port
                 , cPath     :: String    -- ^ The server's websocket path
-                , cRooms     :: [String] -- ^ Which rooms to autojoin
-                } deriving (Show)
+                , cRooms    :: [String]  -- ^ Which rooms to autojoin
+                , cTriggers :: [Trigger] -- ^ Which triggers to use
+                }
 
 -- | Address of the main Pokemon Showdown server
 mainServer :: String
