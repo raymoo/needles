@@ -32,7 +32,7 @@ module Needles.Bot.Message (
                              mkMessageQueue
                            ) where
 
-import           Control.Concurrent      (forkIO, threadDelay, ThreadId)
+import           Control.Concurrent      (ThreadId, forkIO, threadDelay)
 import           Control.Concurrent.Chan (Chan, newChan, readChan)
 import           Control.Exception
 import           Control.Monad
