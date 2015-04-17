@@ -38,7 +38,10 @@ import           Network.HTTP
 import           Network.Stream
 import           Text.JSON           hiding (Result)
 
+loginServer :: String
 loginServer = "http://play.pokemonshowdown.com/action.php"
+
+requestType :: String
 requestType = "application/x-www-form-urlencoded"
 
 data LoginInfo =
