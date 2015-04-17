@@ -50,9 +50,9 @@ import Data.Text (Text)
 data Trigger
 
 -- | An effect that a 'Trigger' might produce.
--- | `var` is the type of the runtime variable the trigger uses to store data.
--- | `perma` is the type of the persistent data for this trigger.
--- | `r` is the type of the result of this effect.
+-- `var` is the type of the runtime variable the trigger uses to store data.
+-- `perma` is the type of the persistent data for this trigger.
+-- `r` is the type of the result of this effect.
 data TriggerAct var perma r where
   Send           :: Text -> TriggerAct a b ()
   PrintLn        :: Text -> TriggerAct a b ()
