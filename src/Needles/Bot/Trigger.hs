@@ -30,16 +30,30 @@ Portability : ghc
 {-# LANGUAGE GADTs             #-}
 {-# LANGUAGE OverloadedStrings #-}
 
-module Needles.Bot.Trigger where
+module Needles.Bot.Trigger (
+                             Trigger
+                           , TriggerAct
+                           , send
+                           , printLn
+                           , getVar
+                           , storeVar
+                           , duraGet
+                           , duraStore
+                           ) where
 
 import Control.Applicative
 import Control.Monad
 import Control.Monad.IO.Class (MonadIO(..))
 import Data.Text (Text)
 
+-- | A trigger. They respond to certain messages by doing things.
 data Trigger
 
-data TriggerAct a b c where
+-- | An effect that a 'Trigger' might produce.
+-- | `var` is the type of the runtime variable the trigger uses to store data.
+-- | `perma` is the type of the persistent data for this trigger.
+-- | `r` is the type of the result of this effect.
+data TriggerAct var perma r where
   Send           :: Text -> TriggerAct a b ()
   PrintLn        :: Text -> TriggerAct a b ()
   GetVar         :: TriggerAct a b a
@@ -64,20 +78,32 @@ instance Monad (TriggerAct a b) where
 instance MonadIO (TriggerAct a b) where
   liftIO = DoIO
 
+
+-- | Sends the given message to the server.
 send :: Text -> TriggerAct a b ()
 send = Send
 
+
+-- | Prints the given message to the console.
 printLn :: Text -> TriggerAct a b ()
 printLn = PrintLn
 
+
+-- | Gets the value of the trigger's runtime store.
 getVar :: TriggerAct a b a
 getVar = GetVar
 
+
+-- | Stores a value into the trigger's runtime store.
 storeVar :: a -> TriggerAct a b ()
 storeVar = StoreVar
 
+
+-- | Gets the persistent data for this trigger.
 duraGet :: TriggerAct a b b
 duraGet = DuraGet
 
+
+-- | Stores persistent data for this trigger.
 duraStore :: b -> TriggerAct a b ()
 duraStore = DuraStore
