@@ -17,8 +17,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 -}
 
 {-|
-Module      : Needles.Bot.Message
-Description : Generic message queue module. Also PS-specific queue.
+Module      : Needles.Bot.Configuration
+Description : The configuration of PS bots
 Copyright   : (c) Leon Medvinsky, 2015
 
 License     : GPL-3
