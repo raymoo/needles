@@ -62,7 +62,7 @@ data Message = Unknown Text
 
 parseMessage :: ByteString -> [Message]
 parseMessage input = case AP.parseOnly messages input of
-                Left _   -> []
+                Left _   -> [Unknown (decodeSmooth input)]
                 Right ms -> ms
 
 decodeSmooth :: ByteString -> Text
