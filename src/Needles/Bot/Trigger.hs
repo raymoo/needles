@@ -32,16 +32,23 @@ Portability : ghc
 
 module Needles.Bot.Trigger (
                              MessageInfo(..)
+                             -- * Triggers
                            , Trigger
                            , TriggerAct
+                             -- ** Construction
                            , mkTrigger
                            , mkTrigger_
+                             -- * Actions
+                             -- ** Basic
                            , send
                            , printLn
                            , getVar
                            , storeVar
                            , duraGet
                            , duraStore
+                             -- ** Convenience
+                           , sendChat
+                           , sendPm
                            ) where
 
 import           Control.Applicative
@@ -49,7 +56,8 @@ import           Control.Concurrent.Chan
 import           Control.Monad
 import           Control.Monad.IO.Class           (MonadIO (..))
 import           Control.Monad.Trans.State.Strict
-import           Data.Text                        (Text)
+import           Data.Text                        (Text, append)
+import qualified Data.Text                        as T
 import qualified Data.Text.IO                     as TIO (putStrLn)
 import           Needles.Bot.Types
 
@@ -116,3 +124,15 @@ duraGet = DuraGet
 -- | Stores persistent data for this trigger.
 duraStore :: b -> TriggerAct a b ()
 duraStore = DuraStore
+
+-- | Takes a room and a message, then sends a message to that room
+sendChat :: Text -> Text -> TriggerAct a b ()
+sendChat r m = mapM_ send roomMessages
+  where roomMessages = map (append roomPrefix) (T.lines m)
+        roomPrefix   = T.snoc r '|'
+
+-- | Takes a user and a message, sending a pm to that user
+sendPm :: Text -> Text -> TriggerAct a b ()
+sendPm u m = mapM_ send userMessages
+  where userMessages = map (append userPrefix) (T.lines m)
+        userPrefix   = T.snoc (append "|/pm " u) ','
