@@ -33,12 +33,14 @@ module Needles.Bot.Types (
                          , Trigger(..)
                          , TriggerAct(..)
                          , Configuration(..)
+                         , MessageInfo(..)
                          ) where
 
 import           Control.Applicative
 import           Control.Concurrent     (Chan)
 import           Control.Monad
 import           Control.Monad.IO.Class (MonadIO (..))
+import           Control.Monad.Trans.State.Strict
 import           Data.Map               (Map)
 import           Data.Text              (Text)
 import           Data.Text              (Text)
@@ -55,9 +57,14 @@ data BotState =
            , bTimestamps :: Map Text Integer -- ^ The enter time of each room
            }
 
+-- | The info of a message
+data MessageInfo
 
 -- | A trigger. They respond to certain messages by doing things.
-data Trigger
+data Trigger =
+  Trigger { trigTest :: MessageInfo -> Bool
+          , trigAct  :: MessageInfo -> StateT BotState IO (Trigger)
+          }
 
 -- | An effect that a 'Trigger' might produce.
 -- `var` is the type of the runtime variable the trigger uses to store data.
