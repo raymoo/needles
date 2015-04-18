@@ -27,12 +27,14 @@ Stability   : experimental
 Portability : ghc
 -}
 
-{-# LANGUAGE GADTs #-}
+{-# LANGUAGE GADTs      #-}
+{-# LANGUAGE RankNTypes #-}
 module Needles.Bot.Types (
                            BotState(..)
                          , Trigger(..)
                          , TriggerAct(..)
                          , Configuration(..)
+                         , MessageType(..)
                          , MessageInfo(..)
                          ) where
 
@@ -57,8 +59,21 @@ data BotState =
            , bTimestamps :: Map Text Integer -- ^ The enter time of each room
            }
 
+-- | The type of a message
+data MessageType = MTChat
+                 | MTPm
+                 | MTRaw
+                 | MTBase
+                 | MTUnknown
+
 -- | The info of a message
-data MessageInfo
+data MessageInfo = MessageInfo { mType   :: MessageType
+                               , what    :: Text
+                               , who     :: Text
+                               , rank    :: Char
+                               , mRoom   :: Text
+                               , respond :: forall a b. Text -> TriggerAct a b ()
+                               }
 
 -- | A trigger. They respond to certain messages by doing things.
 data Trigger =
