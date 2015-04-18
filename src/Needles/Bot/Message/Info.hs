@@ -27,7 +27,7 @@ Stability   : experimental
 Portability : ghc
 -}
 
-module Needles.Bot.Message.Info (makeMInfo) where
+module Needles.Bot.Message.Info (MessageInfo(..), makeMInfo) where
 
 import           Data.Text                    (Text, uncons)
 import           Needles.Bot.Message.In.Parse
