@@ -136,3 +136,9 @@ sendPm :: Text -> Text -> TriggerAct a b ()
 sendPm u m = mapM_ send userMessages
   where userMessages = map (append userPrefix) (T.lines m)
         userPrefix   = T.snoc (append "|/pm " u) ','
+
+-- | Executes a command in the given room (empty string means default room) and
+-- given command string.
+command :: Text -> Text -> TriggerAct a b ()
+command r c = send (append roomPrefix c)
+  where roomPrefix = T.snoc r '|'
