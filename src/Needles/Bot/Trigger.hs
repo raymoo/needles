@@ -81,7 +81,7 @@ mkTrigger_ p action = mkTrigger p action ()
 
 bakeAction :: TriggerAct a b c -> a -> StateT BotState IO (c, a)
 bakeAction (Send text) a =
-  bMessChan <$> get >>= liftIO . flip writeChan text >> return ((), a)
+  bMessChan <$> get >>= liftIO . flip writeList2Chan (T.lines text) >> return ((), a)
 bakeAction (PrintLn text) a = liftIO $ TIO.putStrLn text >> return ((), a)
 bakeAction GetVar a = return (a, a)
 bakeAction (StoreVar a') a = return ((), a')
