@@ -27,11 +27,14 @@ Stability   : experimental
 Portability : ghc
 -}
 
+{-# LANGUAGE GADTs             #-}
 {-# LANGUAGE OverloadedStrings #-}
 
 module Needles.Bot.Trigger (
-                             Trigger
+                             MessageInfo(..)
+                           , Trigger
                            , TriggerAct
+                           , mkTrigger
                            , send
                            , printLn
                            , getVar
@@ -41,10 +44,43 @@ module Needles.Bot.Trigger (
                            ) where
 
 import           Control.Applicative
+import           Control.Concurrent.Chan
 import           Control.Monad
-import           Control.Monad.IO.Class (MonadIO (..))
-import           Data.Text              (Text)
+import           Control.Monad.IO.Class           (MonadIO (..))
+import           Control.Monad.Trans.State.Strict
+import           Data.Text                        (Text)
+import qualified Data.Text.IO                     as TIO (putStrLn)
 import           Needles.Bot.Types
+
+-- | 'mkTrigger' takes a predicate on message types, and a function to create
+-- a 'TriggerAct'. The predicate is used to see if a message should be
+-- processed by this 'Trigger', and the second function determines what actually
+-- happens when the 'Trigger' is triggered. The third argument is the initial
+-- state of the trigger.
+mkTrigger :: (MessageInfo -> Bool) -> (MessageInfo -> TriggerAct a b c)
+             -> a -> Trigger
+mkTrigger p action s = Trigger p actFun
+  where actFun mi = do
+          let baked = bakeAction (action mi) s
+          (_, s') <- baked
+          return (mkTrigger p action s')
+
+bakeAction :: TriggerAct a b c -> a -> StateT BotState IO (c, a)
+bakeAction (Send text) a =
+  bMessChan <$> get >>= liftIO . flip writeChan text >> return ((), a)
+bakeAction (PrintLn text) a = liftIO $ TIO.putStrLn text >> return ((), a)
+bakeAction GetVar a = return (a, a)
+bakeAction (StoreVar a') a = return ((), a')
+bakeAction DuraGet a = error "Durable storage not implemented yet"
+bakeAction (DuraStore b') a = error "Durable storage not implemented yet"
+bakeAction (DoIO io) a = flip (,) a <$> liftIO io
+bakeAction (Bind ma k) a = do
+  (res, a') <- firstAct
+  let secondAct = k res
+  bakeAction secondAct a'
+  where firstAct = bakeAction ma a
+bakeAction (Pure c) a = return (c, a)
+
 
 -- | Sends the given message to the server.
 send :: Text -> TriggerAct a b ()
