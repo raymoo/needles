@@ -35,6 +35,7 @@ module Needles.Bot.Trigger (
                            , Trigger
                            , TriggerAct
                            , mkTrigger
+                           , mkTrigger_
                            , send
                            , printLn
                            , getVar
@@ -64,6 +65,11 @@ mkTrigger p action s = Trigger p actFun
           let baked = bakeAction (action mi) s
           (_, s') <- baked
           return (mkTrigger p action s')
+
+-- | Version for 'TriggerAct's with no state
+mkTrigger_ :: (MessageInfo -> Bool) -> (MessageInfo -> TriggerAct () b c)
+              -> Trigger
+mkTrigger_ p action = mkTrigger p action ()
 
 bakeAction :: TriggerAct a b c -> a -> StateT BotState IO (c, a)
 bakeAction (Send text) a =
