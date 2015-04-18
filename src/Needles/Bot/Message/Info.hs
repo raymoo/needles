@@ -29,10 +29,10 @@ Portability : ghc
 
 module Needles.Bot.Message.Info (makeMInfo) where
 
-import Needles.Bot.Trigger
-import Needles.Bot.Types
-import Needles.Bot.Message.In.Parse
-import Data.Text (Text, uncons)
+import           Data.Text                    (Text, uncons)
+import           Needles.Bot.Message.In.Parse
+import           Needles.Bot.Trigger
+import           Needles.Bot.Types
 
 
 defaultMInfo :: MessageInfo
