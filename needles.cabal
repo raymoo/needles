@@ -21,6 +21,7 @@ library
 
   other-modules:       Needles.Bot.Login
                      , Needles.Bot.Message
+                     , Needles.Bot.State
   -- other-extensions:    
   build-depends:       base >=4.7 && <4.8
                      , text >=1.2 && <1.3
