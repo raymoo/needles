@@ -31,20 +31,8 @@ module Needles.Bot.State (
                            BotState(..)
                          ) where
 
-import           Control.Concurrent        (Chan)
-import           Data.Map                  (Map)
-import           Data.Text                 (Text)
-import           Needles.Bot.Configuration
-import           Needles.Bot.Trigger
-import qualified Network.WebSockets        as WS
-
--- | The state of a bot
-data BotState =
-  BotState { bName       :: String
-           , bPass       :: String
-           , bConn       :: WS.Connection
-           , bTriggers   :: [Trigger] -- ^ The triggers in use
-           , bConfig     :: Configuration
-           , bMessChan   :: Chan Text
-           , bTimestamps :: Map Text Integer -- ^ The enter time of each room
-           }
+import           Control.Concurrent (Chan)
+import           Data.Map           (Map)
+import           Data.Text          (Text)
+import           Needles.Bot.Types
+import qualified Network.WebSockets as WS

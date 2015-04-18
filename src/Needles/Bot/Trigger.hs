@@ -27,7 +27,6 @@ Stability   : experimental
 Portability : ghc
 -}
 
-{-# LANGUAGE GADTs             #-}
 {-# LANGUAGE OverloadedStrings #-}
 
 module Needles.Bot.Trigger (
@@ -41,43 +40,11 @@ module Needles.Bot.Trigger (
                            , duraStore
                            ) where
 
-import Control.Applicative
-import Control.Monad
-import Control.Monad.IO.Class (MonadIO(..))
-import Data.Text (Text)
-
--- | A trigger. They respond to certain messages by doing things.
-data Trigger
-
--- | An effect that a 'Trigger' might produce.
--- `var` is the type of the runtime variable the trigger uses to store data.
--- `perma` is the type of the persistent data for this trigger.
--- `r` is the type of the result of this effect.
-data TriggerAct var perma r where
-  Send           :: Text -> TriggerAct a b ()
-  PrintLn        :: Text -> TriggerAct a b ()
-  GetVar         :: TriggerAct a b a
-  StoreVar       :: a -> TriggerAct a b ()
-  DuraGet        :: TriggerAct a b b
-  DuraStore      :: b -> TriggerAct a b ()
-  DoIO           :: IO c -> TriggerAct a b c
-  Bind           :: TriggerAct a b c -> (c -> TriggerAct a b d) -> TriggerAct a b d
-  Pure           :: c -> TriggerAct a b c
-
-instance Functor (TriggerAct a b) where
-  fmap = liftM
-
-instance Applicative (TriggerAct a b) where
-  pure = Pure
-  (<*>) = ap
-
-instance Monad (TriggerAct a b) where
-  return = Pure
-  (>>=) = Bind
-
-instance MonadIO (TriggerAct a b) where
-  liftIO = DoIO
-
+import           Control.Applicative
+import           Control.Monad
+import           Control.Monad.IO.Class (MonadIO (..))
+import           Data.Text              (Text)
+import           Needles.Bot.Types
 
 -- | Sends the given message to the server.
 send :: Text -> TriggerAct a b ()
