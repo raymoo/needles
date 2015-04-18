@@ -27,9 +27,10 @@ Stability   : experimental
 Portability : ghc
 -}
 
-module Needles.Bot.Message.Info (MessageInfo(..), makeMInfo) where
+module Needles.Bot.Message.Info (MessageInfo(..), makeMInfo, displayMInfo) where
 
-import           Data.Text                    (Text, uncons)
+import           Data.Text                    (Text, append, pack, singleton,
+                                               uncons, unpack)
 import           Needles.Bot.Message.In.Parse
 import           Needles.Bot.Trigger
 import           Needles.Bot.Types
@@ -44,6 +45,15 @@ defaultMInfo =
               , mRoom   = ""
               , respond = const (return ())
               }
+
+displayMInfo :: MessageInfo -> String
+displayMInfo mi = mTyp ++
+                  "|User: " ++ mUser ++
+                  "|Rank: " ++ mRank ++
+                  "|Room: " ++ unpack (mRoom mi)
+  where mTyp = show $ mType mi
+        mUser = unpack $ who mi
+        mRank = rank mi : []
 
 decoupleName :: Text -> (Char, Text)
 decoupleName name = maybe (' ', "") id (uncons name)
