@@ -65,6 +65,7 @@ data MessageType = MTChat
                  | MTRaw
                  | MTBase
                  | MTUnknown
+                 deriving (Show)
 
 -- | The info of a message
 data MessageInfo = MessageInfo { mType   :: MessageType
