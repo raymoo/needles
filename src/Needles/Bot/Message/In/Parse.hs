@@ -123,7 +123,7 @@ challStr :: Parser Message
 challStr = AP.string "|challstr" *> (ChallStr <$> dLex <*> fmap unpack mLex)
 
 time :: Text -> Parser Message
-time r = Timestamp r <$> dLex
+time r = AP.string "|:" *> (Timestamp r <$> dLex)
 
 baseStr :: Parser Message
 baseStr = Base . decodeSmooth <$> AP.takeWhile (/= newlineCode)
