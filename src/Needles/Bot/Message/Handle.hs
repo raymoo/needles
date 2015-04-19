@@ -31,7 +31,6 @@ Portability : ghc
 module Needles.Bot.Message.Handle (handleMessage) where
 
 import           Control.Applicative
-import           Control.Concurrent.Chan
 import           Control.Exception
 import           Control.Monad.IO.Class
 import           Control.Monad.Trans.State.Strict
@@ -43,7 +42,7 @@ import           Needles.Bot.Message.In.Parse
 import           Needles.Bot.Message.Info
 import           Needles.Bot.Trigger
 import           Needles.Bot.Types
-import           System.IO
+
 
 
 -- Runs all the triggers in a bot
@@ -87,7 +86,7 @@ handleMessage (ChallStr key str) = do
    Just assertion ->
      let com = pack $ "|/trn " ++ (bName bstate) ++ ",0," ++ assertion
      in do
-       liftIO $ writeChan (bMessChan bstate) com
+       liftIO $ bMessChan bstate com
        liftIO $ putStrLn "Logged In"
        liftIO $ putStrLn "Joining Rooms..."
        get >>= mapM_ joinRoom . cRooms . bConfig
@@ -112,5 +111,5 @@ putTimestamp r t =
 joinRoom :: String -> StateT BotState IO ()
 joinRoom r = do
   chan <- bMessChan <$> get
-  liftIO $ writeChan chan com
+  liftIO $ chan com
   where com = pack $ "|/join " ++ r
