@@ -24,8 +24,7 @@ library
                      , Needles.Bot.State
                      , Needles.Bot.Types
                      , Needles.Bot.Message.In.Parse
-                     , Needles.Bot.Handle
-                     , Needles.Bot
+                     , Needles.Bot.Message.Handle
   -- other-extensions:    
   build-depends:       base >=4.7 && <4.8
                      , text >=1.2 && <1.3
