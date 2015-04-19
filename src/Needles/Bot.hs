@@ -63,7 +63,7 @@ bot c conn = do
   catch (loop backup newBot) (\e -> const id (e :: SomeException) reinitialize backup)
 
 loop :: IORef BotState -> BotState -> IO ()
-loop backup thebot = forever . flip execStateT thebot $ do
+loop backup thebot = flip evalStateT thebot . forever $ do
   mess <- getData
   handleBS mess
   get >>= liftIO . writeIORef backup
