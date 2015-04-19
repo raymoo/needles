@@ -37,12 +37,11 @@ import           Control.Applicative
 import           Data.Attoparsec.ByteString (Parser)
 import qualified Data.Attoparsec.ByteString as AP
 import           Data.ByteString            (ByteString)
-import           Data.Char
 import           Data.Text                  (Text, unpack)
 import           Data.Text.Encoding         (decodeUtf8With)
 import           Data.Text.Encoding.Error   (lenientDecode)
 import           Data.Word                  (Word8)
-import           Needles.Bot.Types
+
 import           Safe                       (readMay)
 
 type Room = Text

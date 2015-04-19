@@ -32,10 +32,7 @@ module Needles.Bot.Login (LoginInfo(..), Challenge(..), getAssertion) where
 
 import           Control.Applicative ((<$>))
 import           Data.List           (intercalate)
-import           Data.Text           (Text)
-import qualified Data.Text           as T
 import           Network.HTTP
-import           Network.Stream
 import           Text.JSON           hiding (Result)
 
 loginServer :: String

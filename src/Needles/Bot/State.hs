@@ -31,8 +31,5 @@ module Needles.Bot.State (
                            BotState(..)
                          ) where
 
-import           Control.Concurrent (Chan)
-import           Data.Map           (Map)
-import           Data.Text          (Text)
 import           Needles.Bot.Types
-import qualified Network.WebSockets as WS
+

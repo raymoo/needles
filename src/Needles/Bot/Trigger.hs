@@ -52,7 +52,6 @@ module Needles.Bot.Trigger (
                            ) where
 
 import           Control.Applicative
-import           Control.Concurrent.Chan
 import           Control.Monad.IO.Class           (MonadIO (..))
 import           Control.Monad.Trans.State.Strict
 import           Data.Text                        (Text, append)
