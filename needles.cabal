@@ -3,17 +3,22 @@
 
 name:                needles
 version:             0.1.0.0
-synopsis:            Pokemon Showdown bot in Haskell
--- description:         
+synopsis:            Pokemon Showdown bot library
+description:         This is a bot "library" that allows the user of this package
+                     to run a custom pokemon showdown bot.
 license:             GPL-3
 license-file:        LICENSE
-author:              raymoo
--- maintainer:          
--- copyright:           
+author:              Hijiri
+maintainer:          Hijiri
+copyright:           Leon Medvinsky
 category:            Chatbot
 build-type:          Simple
 -- extra-source-files:  
 cabal-version:       >=1.10
+
+source-repository head
+  type:     git
+  location: https://github.com/raymoo/needles
 
 library
   exposed-modules:     Needles.Bot.Trigger
