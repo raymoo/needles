@@ -27,8 +27,9 @@ Stability   : experimental
 Portability : ghc
 -}
 
-{-# LANGUAGE GADTs             #-}
-{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE GADTs               #-}
+{-# LANGUAGE OverloadedStrings   #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 
 module Needles.Bot.Trigger (
                              MessageInfo(..)
@@ -51,6 +52,7 @@ module Needles.Bot.Trigger (
                            , sendChat
                            , sendPm
                            , command
+                           , clusterTrigger
                            ) where
 
 import           Control.Applicative
@@ -144,3 +146,12 @@ sendPm u m = mapM_ send userMessages
 command :: Text -> Text -> TriggerAct a b ()
 command r c = send (append roomPrefix c)
   where roomPrefix = T.snoc r '|'
+
+-- | Combines multiple predicate and TriggerActions into one big blob that
+-- shares runtime state. Second argument is initial state.
+clusterTrigger :: forall a b. [(MessageInfo -> Bool, MessageInfo -> TriggerAct a b ())] -> a -> Trigger
+clusterTrigger triggers initState = mkTrigger clusterPred clusterAction initState
+  where clusterPred mi = any ($mi) . map fst $ triggers
+        clusterAction :: MessageInfo -> TriggerAct a b ()
+        clusterAction mi = mapM_ (checkAndDo mi) triggers
+        checkAndDo mi (p, act) = if p mi then act mi else return ()
