@@ -8,9 +8,8 @@ description:         This is a bot "library" that allows the user of this packag
                      to run a custom pokemon showdown bot.
 license:             GPL-3
 license-file:        LICENSE
-author:              Hijiri
-maintainer:          Hijiri
-copyright:           Leon Medvinsky
+author:              Leon Medvinsky
+maintainer:          uguu@installgentoo.com
 category:            Chatbot
 build-type:          Simple
 -- extra-source-files:  
