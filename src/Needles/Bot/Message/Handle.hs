@@ -54,25 +54,29 @@ passTriggers m = do
    Just mi -> do
      trigs <- bTriggers <$> get
      newTriggers <- mapM (doTrigger mi) trigs
-     modify (\bState -> bState { bTriggers = newTriggers})
+     modify' (\bState -> bState { bTriggers = newTriggers })
 
 doTrigger :: MessageInfo -> Trigger -> StateT BotState IO Trigger
 doTrigger mi trig@(Trigger test act)
-  | test mi = tryTrigger
+  | test mi = tryTrigger mi trig
   | otherwise = return trig
-  where printError e = liftIO $ do
-          putStrLn "Error in Trigger"
-          putStrLn $ "MessageInfo: " ++ displayMInfo mi
-          putStrLn $ "Error:"
-          print e
-        tryTrigger = do
-          bstate <- get
-          (res, bstate') <- liftIO $
-                            catch (runStateT (act mi) bstate)
-                            (\e -> do printError (e :: SomeException)
-                                      return (trig, bstate))
-          put bstate'
-          return res
+
+printError :: Exception e => MessageInfo -> e -> IO ()
+printError mi e = do
+  putStrLn "Error in Trigger"
+  putStrLn $ "MessageInfo: " ++ displayMInfo mi
+  putStrLn $ "Error:"
+  print e
+
+tryTrigger :: MessageInfo -> Trigger -> StateT BotState IO Trigger
+tryTrigger mi trig@(Trigger _ act) = do
+  bstate <- get
+  (res, bstate') <- liftIO $
+                    catch (runStateT (act mi) bstate)
+                    (\e -> do printError mi (e :: SomeException)
+                              return (trig, bstate))
+  put bstate'
+  return res
 
 -- | Main handler
 handleBS :: ByteString -> StateT BotState IO ()
