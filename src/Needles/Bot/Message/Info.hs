@@ -27,6 +27,7 @@ Stability   : experimental
 Portability : ghc
 -}
 
+{-# LANGUAGE OverloadedStrings #-}
 module Needles.Bot.Message.Info (MessageInfo(..), makeMInfo, displayMInfo) where
 
 import           Data.Text                    (Text, append, pack, singleton,
