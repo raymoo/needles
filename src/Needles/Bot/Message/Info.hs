@@ -50,10 +50,12 @@ displayMInfo :: MessageInfo -> String
 displayMInfo mi = mTyp ++
                   "|User: " ++ mUser ++
                   "|Rank: " ++ mRank ++
-                  "|Room: " ++ unpack (mRoom mi)
+                  "|Room: " ++ unpack (mRoom mi) ++
+                  "|What: " ++ mWhat
   where mTyp = show $ mType mi
         mUser = unpack $ who mi
         mRank = rank mi : []
+        mWhat = unpack $ what mi
 
 decoupleName :: Text -> (Char, Text)
 decoupleName name = maybe (' ', "") id (uncons name)
