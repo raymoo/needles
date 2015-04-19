@@ -30,20 +30,20 @@ Portability : ghc
 {-# LANGUAGE OverloadedStrings #-}
 module Needles.Bot.Message.Handle (handleMessage) where
 
-import Control.Applicative
-import Control.Concurrent.Chan
-import Control.Exception
-import Control.Monad.Trans.State.Strict
-import Control.Monad.IO.Class
-import Data.Map.Strict (findWithDefault, insert)
-import Data.Text (Text, pack, append)
-import qualified Data.Text.IO as T
-import Needles.Bot.Login
-import Needles.Bot.Message.In.Parse
-import Needles.Bot.Message.Info
-import Needles.Bot.Trigger
-import Needles.Bot.Types
-import System.IO
+import           Control.Applicative
+import           Control.Concurrent.Chan
+import           Control.Exception
+import           Control.Monad.IO.Class
+import           Control.Monad.Trans.State.Strict
+import           Data.Map.Strict                  (findWithDefault, insert)
+import           Data.Text                        (Text, append, pack)
+import qualified Data.Text.IO                     as T
+import           Needles.Bot.Login
+import           Needles.Bot.Message.In.Parse
+import           Needles.Bot.Message.Info
+import           Needles.Bot.Trigger
+import           Needles.Bot.Types
+import           System.IO
 
 
 -- Runs all the triggers in a bot
@@ -99,7 +99,7 @@ handleMessage m@(Chat r t u w) = do
     else return ()
 handleMessage (Timestamp r t) = putTimestamp r t
 handleMessage m = passTriggers m
-    
+
 getTimestamp :: Text -> StateT BotState IO Integer
 getTimestamp r =
   findWithDefault 0 r . bTimestamps <$> get
