@@ -18,6 +18,7 @@ cabal-version:       >=1.10
 library
   exposed-modules:     Needles.Bot.Trigger
                      , Needles.Bot.Configuration
+                     , Needles.Bot
 
   other-modules:       Needles.Bot.Login
                      , Needles.Bot.Message
