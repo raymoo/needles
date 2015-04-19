@@ -28,12 +28,13 @@ Portability : ghc
 -}
 
 {-# LANGUAGE OverloadedStrings #-}
-module Needles.Bot.Message.Handle (handleMessage) where
+module Needles.Bot.Message.Handle (handleBS) where
 
 import           Control.Applicative
 import           Control.Exception
 import           Control.Monad.IO.Class
 import           Control.Monad.Trans.State.Strict
+import           Data.ByteString                  (ByteString)
 import           Data.Map.Strict                  (findWithDefault, insert)
 import           Data.Text                        (Text, append, pack)
 import qualified Data.Text.IO                     as T
@@ -72,6 +73,10 @@ doTrigger mi trig@(Trigger test act)
                                       return (trig, bstate))
           put bstate'
           return res
+
+-- | Main handler
+handleBS :: ByteString -> StateT BotState IO ()
+handleBS = mapM_ handleMessage . parseMessage
 
 handleMessage :: Message -> StateT BotState IO ()
 handleMessage (Unknown m) = liftIO $ putStrLn "Unknown Message: " >> T.putStrLn m
