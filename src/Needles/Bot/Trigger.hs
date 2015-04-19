@@ -32,6 +32,7 @@ Portability : ghc
 
 module Needles.Bot.Trigger (
                              MessageInfo(..)
+                           , MessageType(..)
                              -- * Triggers
                            , Trigger
                            , TriggerAct
