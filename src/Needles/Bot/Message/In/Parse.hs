@@ -102,9 +102,6 @@ contLex = AP.word8 pipeCode *> (decodeSmooth <$> AP.takeWhile (/= newlineCode))
 room :: Parser Room
 room = AP.word8 rightAngleCode *> (decodeSmooth <$> AP.takeWhile (/= newlineCode))
 
-getArgs :: Parser [Text]
-getArgs = many mLex
-
 newline :: Parser Word8
 newline = AP.word8 newlineCode
 

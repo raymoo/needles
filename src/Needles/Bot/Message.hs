@@ -34,7 +34,7 @@ module Needles.Bot.Message (
                            ) where
 
 import           Control.Concurrent      (ThreadId, forkIO, threadDelay)
-import           Control.Concurrent.Chan (Chan, newChan, readChan, writeChan)
+import           Control.Concurrent.Chan
 import           Control.Exception
 import           Control.Monad
 import           Data.Text               (Text)

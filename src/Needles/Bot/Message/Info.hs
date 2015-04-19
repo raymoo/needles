@@ -30,8 +30,7 @@ Portability : ghc
 {-# LANGUAGE OverloadedStrings #-}
 module Needles.Bot.Message.Info (MessageInfo(..), makeMInfo, displayMInfo) where
 
-import           Data.Text                    (Text, append, pack, singleton,
-                                               uncons, unpack)
+import           Data.Text                    (Text, uncons, unpack)
 import           Needles.Bot.Message.In.Parse
 import           Needles.Bot.Trigger
 import           Needles.Bot.Types
@@ -60,7 +59,7 @@ decoupleName :: Text -> (Char, Text)
 decoupleName name = maybe (' ', "") id (uncons name)
 
 makeMInfo :: Message -> Maybe MessageInfo
-makeMInfo (Chat r t user mess) =
+makeMInfo (Chat r _ user mess) =
   let (userrank, username) = decoupleName user
   in Just
      defaultMInfo { mType   = MTChat

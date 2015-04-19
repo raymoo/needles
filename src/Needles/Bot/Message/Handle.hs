@@ -36,7 +36,7 @@ import           Control.Monad.IO.Class
 import           Control.Monad.Trans.State.Strict
 import           Data.ByteString                  (ByteString)
 import           Data.Map.Strict                  (findWithDefault, insert)
-import           Data.Text                        (Text, append, pack)
+import           Data.Text                        (Text, pack)
 import qualified Data.Text.IO                     as T
 import           Needles.Bot.Login
 import           Needles.Bot.Message.In.Parse
@@ -96,7 +96,7 @@ handleMessage (ChallStr key str) = do
        liftIO $ putStrLn "Joining Rooms..."
        get >>= mapM_ joinRoom . cRooms . bConfig
        liftIO $ putStrLn "Done."
-handleMessage m@(Chat r t u w) = do
+handleMessage m@(Chat r t _ _) = do
   joinTime <- getTimestamp r
   if t > joinTime
     then passTriggers m

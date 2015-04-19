@@ -49,6 +49,7 @@ module Needles.Bot.Trigger (
                              -- ** Convenience
                            , sendChat
                            , sendPm
+                           , command
                            ) where
 
 import           Control.Applicative
@@ -84,9 +85,9 @@ bakeAction (Send text) a = do
   return ((), a)
 bakeAction (PrintLn text) a = liftIO $ TIO.putStrLn text >> return ((), a)
 bakeAction GetVar a = return (a, a)
-bakeAction (StoreVar a') a = return ((), a')
-bakeAction DuraGet a = error "Durable storage not implemented yet"
-bakeAction (DuraStore b') a = error "Durable storage not implemented yet"
+bakeAction (StoreVar a') _ = return ((), a')
+bakeAction DuraGet _ = error "Durable storage not implemented yet"
+bakeAction (DuraStore _) _ = error "Durable storage not implemented yet"
 bakeAction (DoIO io) a = flip (,) a <$> liftIO io
 bakeAction (Bind ma k) a = do
   (res, a') <- firstAct
