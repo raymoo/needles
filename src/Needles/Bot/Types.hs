@@ -39,13 +39,12 @@ module Needles.Bot.Types (
                          ) where
 
 import           Control.Applicative
-import           Control.Concurrent               (Chan)
 import           Control.Monad
 import           Control.Monad.IO.Class           (MonadIO (..))
 import           Control.Monad.Trans.State.Strict
 import           Data.Map                         (Map)
 import           Data.Text                        (Text)
-import           Data.Text                        (Text)
+
 import qualified Network.WebSockets               as WS
 
 -- | The state of a bot
@@ -55,7 +54,7 @@ data BotState =
            , bConn       :: WS.Connection
            , bTriggers   :: [Trigger] -- ^ The triggers in use
            , bConfig     :: Configuration
-           , bMessChan   :: Chan Text
+           , bMessChan   :: Text -> IO ()
            , bTimestamps :: Map Text Integer -- ^ The enter time of each room
            }
 

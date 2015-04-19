@@ -53,7 +53,6 @@ module Needles.Bot.Trigger (
 
 import           Control.Applicative
 import           Control.Concurrent.Chan
-import           Control.Monad
 import           Control.Monad.IO.Class           (MonadIO (..))
 import           Control.Monad.Trans.State.Strict
 import           Data.Text                        (Text, append)
@@ -80,8 +79,10 @@ mkTrigger_ :: (MessageInfo -> Bool) -> (MessageInfo -> TriggerAct () b c)
 mkTrigger_ p action = mkTrigger p action ()
 
 bakeAction :: TriggerAct a b c -> a -> StateT BotState IO (c, a)
-bakeAction (Send text) a =
-  bMessChan <$> get >>= liftIO . flip writeList2Chan (T.lines text) >> return ((), a)
+bakeAction (Send text) a = do
+  sender <- bMessChan <$> get
+  liftIO $ mapM_ sender (T.lines text)
+  return ((), a)
 bakeAction (PrintLn text) a = liftIO $ TIO.putStrLn text >> return ((), a)
 bakeAction GetVar a = return (a, a)
 bakeAction (StoreVar a') a = return ((), a')
