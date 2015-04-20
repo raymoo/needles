@@ -53,6 +53,12 @@ module Needles.Bot.Trigger (
                            , sendPm
                            , command
                            , clusterTrigger
+                             -- * Tests
+                           , contentIs
+                           , startsWith
+                             -- ** Combinators
+                           , (<&&>)
+                           , (<||>)
                              -- * Utilities
                            , normalizeName
                            ) where
@@ -164,3 +170,25 @@ clusterTrigger triggers initState = mkTrigger clusterPred clusterAction initStat
 -- when you want a consistent nick to refer to the same account.
 normalizeName :: Text -> Text
 normalizeName = T.toLower . T.filter isAlphaNum
+
+
+infixr 1 <&&>
+infixr 1 <||>
+
+-- | Makes a new test, where both its arguments must be true
+(<&&>) :: (MessageInfo -> Bool) -> (MessageInfo -> Bool) -> (MessageInfo -> Bool)
+(<&&>) = liftA2 (&&)
+
+-- | Makes a new test, where either of its arguments can be true
+(<||>) :: (MessageInfo -> Bool) -> (MessageInfo -> Bool) -> (MessageInfo -> Bool)
+(<||>) = liftA2 (||)
+
+
+-- | The message is exactly this 'Text'
+contentIs :: Text -> (MessageInfo -> Bool)
+contentIs content = (== content) . what
+
+
+-- | The message starts with this 'Text'
+startsWith :: Text -> (MessageInfo -> Bool)
+startsWith prefix = T.isPrefixOf prefix . what
