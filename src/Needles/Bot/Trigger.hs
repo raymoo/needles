@@ -53,11 +53,14 @@ module Needles.Bot.Trigger (
                            , sendPm
                            , command
                            , clusterTrigger
+                             -- * Utilities
+                           , normalizeName
                            ) where
 
 import           Control.Applicative
 import           Control.Monad.IO.Class           (MonadIO (..))
 import           Control.Monad.Trans.State.Strict
+import           Data.Char
 import           Data.Text                        (Text, append)
 import qualified Data.Text                        as T
 import qualified Data.Text.IO                     as TIO (putStrLn)
@@ -155,3 +158,9 @@ clusterTrigger triggers initState = mkTrigger clusterPred clusterAction initStat
         clusterAction :: MessageInfo -> TriggerAct a b ()
         clusterAction mi = mapM_ (checkAndDo mi) triggers
         checkAndDo mi (p, act) = if p mi then act mi else return ()
+
+
+-- | Makes a name lowercase and takes out non-alphanumeric characters. Useful
+-- when you want a consistent nick to refer to the same account.
+normalizeName :: Text -> Text
+normalizeName = T.toLower . T.filter isAlphaNum
