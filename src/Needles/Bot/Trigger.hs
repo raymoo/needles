@@ -43,15 +43,13 @@ module Needles.Bot.Trigger (
                              -- * Actions
                              -- ** Basic
                            , send
-                           , printLn
                            , getVar
                            , storeVar
-                           , duraGet
-                           , duraStore
                              -- ** Convenience
                            , sendChat
                            , sendPm
                            , command
+                           , printLn
                            , clusterTrigger
                              -- * Tests
                            , contentIs
@@ -95,7 +93,7 @@ bakeAction (Send text) a = do
   sender <- bMessChan <$> get
   liftIO $ mapM_ sender (T.lines text)
   return ((), a)
-bakeAction (PrintLn text) a = liftIO $ TIO.putStrLn text >> return ((), a)
+bakeAction (Log _) _ = error "Logging not implemented yet"
 bakeAction GetVar a = return (a, a)
 bakeAction (StoreVar a') _ = return ((), a')
 bakeAction DuraGet _ = error "Durable storage not implemented yet"
@@ -114,9 +112,9 @@ send :: Text -> TriggerAct a b ()
 send = Send
 
 
--- | Prints the given message to the console.
-printLn :: Text -> TriggerAct a b ()
-printLn = PrintLn
+-- | Log the message
+writeLog :: Text -> TriggerAct a b ()
+writeLog = Log
 
 
 -- | Gets the value of the trigger's runtime store.
@@ -155,6 +153,12 @@ sendPm u m = mapM_ send userMessages
 command :: Text -> Text -> TriggerAct a b ()
 command r c = send (append roomPrefix c)
   where roomPrefix = T.snoc r '|'
+
+
+-- | Prints the given message to the console.
+printLn :: Text -> TriggerAct a b ()
+printLn = DoIO . TIO.putStrLn
+
 
 -- | Combines multiple predicate and TriggerActions into one big blob that
 -- shares runtime state. Second argument is initial state.

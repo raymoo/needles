@@ -87,7 +87,7 @@ data Trigger =
 -- `r` is the type of the result of this effect.
 data TriggerAct var perma r where
   Send           :: Text -> TriggerAct a b ()
-  PrintLn        :: Text -> TriggerAct a b ()
+  Log            :: Text -> TriggerAct a b ()
   GetVar         :: TriggerAct a b a
   StoreVar       :: a -> TriggerAct a b ()
   DuraGet        :: TriggerAct a b b
