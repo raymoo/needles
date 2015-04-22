@@ -38,6 +38,7 @@ module Needles.Bot.Trigger (
                            , Trigger
                            , TriggerAct
                              -- ** Construction
+                           , ProtoTrigger(..)
                            , mkTrigger
                            , mkTrigger_
                              -- * Actions
@@ -65,46 +66,52 @@ import           Control.Applicative
 import           Control.Monad.IO.Class           (MonadIO (..))
 import           Control.Monad.Trans.State.Strict
 import           Data.Char
+import           Data.Functor
 import           Data.Text                        (Text, append)
 import qualified Data.Text                        as T
 import qualified Data.Text.IO                     as TIO (putStrLn)
 import           Needles.Bot.Types
 
--- | 'mkTrigger' takes a predicate on message types, and a function to create
--- a 'TriggerAct'. The predicate is used to see if a message should be
--- processed by this 'Trigger', and the second function determines what actually
--- happens when the 'Trigger' is triggered. The third argument is the initial
--- state of the trigger.
-mkTrigger :: (MessageInfo -> Bool) -> (MessageInfo -> TriggerAct a b c)
-             -> a -> Trigger
-mkTrigger p action s = Trigger p actFun
+-- | A 'ProtoTrigger' is a trigger that is not ready to be used. The type
+-- parameters are the same as the first two of 'TriggerAct'.
+data ProtoTrigger a b =
+  forall c. ProtoTrigger { ptPred :: MessageInfo -> Bool
+                           -- ^ Predicate that determines which triggers
+                           -- to process
+                         , ptAct  :: MessageInfo -> TriggerAct a b c
+                           -- ^ The actual action to take when activated
+                         }
+
+-- | 'mkTrigger' takes a 'ProtoTrigger' and creates a 'Trigger'. The 'String'
+-- argument is a name for the trigger, used in case of permanent data storage.
+mkTrigger :: String -> ProtoTrigger a b -> a -> Trigger
+mkTrigger name pt@(ProtoTrigger p action) s = Trigger p actFun
   where actFun mi = do
-          let baked = bakeAction (action mi) s
+          let baked = bakeAction name (action mi) s
           (_, s') <- baked
-          return (mkTrigger p action s')
+          return (mkTrigger name pt s')
 
 -- | Version for 'TriggerAct's with no state
-mkTrigger_ :: (MessageInfo -> Bool) -> (MessageInfo -> TriggerAct () b c)
-              -> Trigger
-mkTrigger_ p action = mkTrigger p action ()
+mkTrigger_ :: String -> ProtoTrigger () b -> Trigger
+mkTrigger_ name pt = mkTrigger name pt ()
 
-bakeAction :: TriggerAct a b c -> a -> StateT BotState IO (c, a)
-bakeAction (Send text) a = do
+bakeAction :: String -> TriggerAct a b c -> a -> StateT BotState IO (c, a)
+bakeAction _ (Send text) a = do
   sender <- bMessChan <$> get
   liftIO $ mapM_ sender (T.lines text)
   return ((), a)
-bakeAction (Log _) _ = error "Logging not implemented yet"
-bakeAction GetVar a = return (a, a)
-bakeAction (StoreVar a') _ = return ((), a')
-bakeAction DuraGet _ = error "Durable storage not implemented yet"
-bakeAction (DuraStore _) _ = error "Durable storage not implemented yet"
-bakeAction (DoIO io) a = flip (,) a <$> liftIO io
-bakeAction (Bind ma k) a = do
+bakeAction _ (Log _) _ = error "Logging not implemented yet"
+bakeAction _ GetVar a = return (a, a)
+bakeAction _ (StoreVar a') _ = return ((), a')
+bakeAction _ DuraGet _ = error "Durable storage not implemented yet"
+bakeAction _ (DuraStore _) _ = error "Durable storage not implemented yet"
+bakeAction _ (DoIO io) a = flip (,) a <$> liftIO io
+bakeAction name (Bind ma k) a = do
   (res, a') <- firstAct
   let secondAct = k res
-  bakeAction secondAct a'
-  where firstAct = bakeAction ma a
-bakeAction (Pure c) a = return (c, a)
+  bakeAction name secondAct a'
+  where firstAct = bakeAction name ma a
+bakeAction _ (Pure c) a = return (c, a)
 
 
 -- | Sends the given message to the server.
@@ -160,14 +167,16 @@ printLn :: Text -> TriggerAct a b ()
 printLn = DoIO . TIO.putStrLn
 
 
--- | Combines multiple predicate and TriggerActions into one big blob that
--- shares runtime state. Second argument is initial state.
-clusterTrigger :: forall a b. [(MessageInfo -> Bool, MessageInfo -> TriggerAct a b ())] -> a -> Trigger
-clusterTrigger triggers initState = mkTrigger clusterPred clusterAction initState
-  where clusterPred mi = any ($mi) . map fst $ triggers
+-- | Combines multiple 'ProtoTrigger's into one big blob that
+-- shares runtime state. Third argument is initial state, First is the
+-- trigger name.
+clusterTrigger :: forall a b. String -> [ProtoTrigger a b] -> a -> Trigger
+clusterTrigger name triggers initState =
+  mkTrigger name (ProtoTrigger clusterPred clusterAction) initState
+  where clusterPred mi = any ($mi) . map ptPred $ triggers
         clusterAction :: MessageInfo -> TriggerAct a b ()
         clusterAction mi = mapM_ (checkAndDo mi) triggers
-        checkAndDo mi (p, act) = if p mi then act mi else return ()
+        checkAndDo mi (ProtoTrigger p act) = if p mi then void $ act mi else return ()
 
 
 -- | Makes a name lowercase and takes out non-alphanumeric characters. Useful

@@ -42,7 +42,7 @@ import           Needles.Bot.Trigger
 
 -- | Trigger that replies with an example message
 replyTrig :: Trigger
-replyTrig = mkTrigger replyTest replyAct ()
+replyTrig = mkTrigger "reply" (ProtoTrigger replyTest replyAct) ()
 
 replyTest :: MessageInfo -> Bool
 replyTest mi = mType mi == MTChat && (".replychat" == what mi)
@@ -53,7 +53,7 @@ replyAct mi = respond mi message
 
 -- | Replies in pm
 replyPmTrig :: Trigger
-replyPmTrig = mkTrigger replyPmTest replyPmAct ()
+replyPmTrig = mkTrigger "replyPm" (ProtoTrigger replyPmTest replyPmAct) ()
 
 replyPmTest :: MessageInfo -> Bool
 replyPmTest mi = (mType mi == MTChat || mType mi == MTPm) && (".replypm" == what mi)
@@ -63,7 +63,8 @@ replyPmAct mi = sendPm (who mi) "This is an example pm."
 
 -- | Simple state
 simpleStateTrig :: Trigger
-simpleStateTrig = mkTrigger simpleStateTest simpleStateAct "Not Set"
+simpleStateTrig =
+  mkTrigger "simpleState" (ProtoTrigger simpleStateTest simpleStateAct) "Not Set"
 
 simpleStateTest :: MessageInfo -> Bool
 simpleStateTest mi = (mType mi == MTChat || mType mi == MTPm) &&
@@ -86,6 +87,10 @@ statePutAct mi = do
   testdata <- getVar
   respond mi ("Data stored: " `append` testdata)
 
+statePutProto :: ProtoTrigger Text b
+statePutProto = ProtoTrigger statePutTest statePutAct
+
+
 stateGetTest :: MessageInfo -> Bool
 stateGetTest mi = (mType mi == MTChat || mType mi == MTPm) &&
                   (".sGet" `T.isPrefixOf` what mi)
@@ -95,5 +100,10 @@ stateGetAct mi = do
   datas <- getVar
   respond mi ("Data: " `append` datas)
 
+stateGetProto :: ProtoTrigger Text b
+stateGetProto = ProtoTrigger stateGetTest stateGetAct
+
+
 stateTrig :: Trigger
-stateTrig = clusterTrigger [(statePutTest, statePutAct), (stateGetTest, stateGetAct)] ""
+stateTrig =
+  clusterTrigger "state" [stateGetProto, statePutProto] ""
