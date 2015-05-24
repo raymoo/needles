@@ -33,7 +33,7 @@ module Needles.Bot.Message.Info (MessageInfo(..), makeMInfo, displayMInfo) where
 import           Data.Text                    (Text, uncons, unpack)
 import           Needles.Bot.Message.In.Parse
 import           Needles.Bot.Trigger
-import           Needles.Bot.Types
+
 
 
 defaultMInfo :: MessageInfo
@@ -85,4 +85,9 @@ makeMInfo (Raw r w) = Just
                , what  = w
                , mRoom = r
                }
+makeMInfo (Base w) =
+  Just defaultMInfo { mType = MTBase
+                    , what = w
+                    } 
+
 makeMInfo _ = Nothing
