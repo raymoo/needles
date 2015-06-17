@@ -46,6 +46,7 @@ module Needles.Bot.Trigger (
                            , send
                            , getVar
                            , storeVar
+                           , writeLog
                              -- ** Convenience
                            , sendChat
                            , sendPm
@@ -100,7 +101,11 @@ bakeAction _ (Send text) a = do
   sender <- bMessChan <$> get
   liftIO $ mapM_ sender (T.lines text)
   return ((), a)
-bakeAction _ (Log _) _ = error "Logging not implemented yet"
+bakeAction name (Log str) a = do
+  logger <- cLogger . bConfig <$> get
+  let message = T.pack (name ++ ": ") `T.append` str
+  liftIO $ logger message
+  return ((), a)
 bakeAction _ GetVar a = return (a, a)
 bakeAction _ (StoreVar a') _ = return ((), a')
 bakeAction _ DuraGet _ = error "Durable storage not implemented yet"
@@ -133,15 +138,6 @@ getVar = GetVar
 storeVar :: a -> TriggerAct a b ()
 storeVar = StoreVar
 
-
--- | Gets the persistent data for this trigger.
-duraGet :: TriggerAct a b b
-duraGet = DuraGet
-
-
--- | Stores persistent data for this trigger.
-duraStore :: b -> TriggerAct a b ()
-duraStore = DuraStore
 
 -- | Takes a room and a message, then sends a message to that room
 sendChat :: Text -> Text -> TriggerAct a b ()
