@@ -114,9 +114,10 @@ instance MonadIO (TriggerAct a b) where
 data Configuration =
   Configuration { cUsername :: String
                 , cPassword :: String
-                , cServer   :: String    -- ^ The server address
-                , cPort     :: Int       -- ^ The server port
-                , cPath     :: String    -- ^ The server's websocket path
-                , cRooms    :: [String]  -- ^ Which rooms to autojoin
-                , cTriggers :: [Trigger] -- ^ Which triggers to use
+                , cServer   :: String        -- ^ The server address
+                , cPort     :: Int           -- ^ The server port
+                , cPath     :: String        -- ^ The server's websocket path
+                , cRooms    :: [String]      -- ^ Which rooms to autojoin
+                , cTriggers :: [Trigger]     -- ^ Which triggers to use
+                , cLogger   :: Text -> IO () -- ^ What to do when logging
                 }
