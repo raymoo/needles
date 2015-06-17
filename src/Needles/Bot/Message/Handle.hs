@@ -57,7 +57,7 @@ passTriggers m = do
      modify' (\bState -> bState { bTriggers = newTriggers })
 
 doTrigger :: MessageInfo -> Trigger -> StateT BotState IO Trigger
-doTrigger mi trig@(Trigger test act)
+doTrigger mi trig@(Trigger test _)
   | test mi = tryTrigger mi trig
   | otherwise = return trig
 
