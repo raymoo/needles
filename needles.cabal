@@ -9,7 +9,7 @@ description:         This is a bot "library" that allows the user of this packag
 license:             GPL-3
 license-file:        LICENSE
 author:              Leon Medvinsky
-maintainer:          uguu@installgentoo.com
+maintainer:          lmedvinsky@hotmail.com
 category:            Chatbot
 build-type:          Simple
 -- extra-source-files:  
