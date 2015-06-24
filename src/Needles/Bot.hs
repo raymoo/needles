@@ -60,7 +60,7 @@ bot c conn = do
                         , bTimestamps = empty
                         }
   backup <- newIORef newBot
-  catch (loop backup newBot) (\e -> const id (e :: SomeException) reinitialize backup)
+  catch (loop backup newBot) (reinitialize backup)
 
 loop :: IORef BotState -> BotState -> IO ()
 loop backup thebot = flip evalStateT thebot . forever $ do
@@ -71,11 +71,11 @@ loop backup thebot = flip evalStateT thebot . forever $ do
 getData :: StateT BotState IO ByteString
 getData = get >>= liftIO . WS.receiveData . bConn
 
-reinitialize :: IORef BotState -> IO ()
-reinitialize backup = do
+reinitialize :: IORef BotState -> SomeException -> IO ()
+reinitialize backup _ = do
   reclaim <- readIORef backup
   let config = bConfig reclaim
-  WS.runClient (cServer config) (cPort config) (cPath config) (fixBot reclaim)
+  catch (WS.runClient (cServer config) (cPort config) (cPath config) (fixBot reclaim)) (reinitialize backup)
   where fixBot oldBot conn = do
           (queue, _) <- mkPSQueue conn (const $ return () :: SomeException -> IO ())
           let newBot = oldBot { bConn = conn
