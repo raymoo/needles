@@ -54,7 +54,7 @@ passTriggers m = do
    Just mi -> do
      trigs <- bTriggers <$> get
      newTriggers <- mapM (doTrigger mi) trigs
-     modify' (\bState -> bState { bTriggers = newTriggers })
+     get >>= ($!) put .  (\bState -> bState { bTriggers = newTriggers })
 
 doTrigger :: MessageInfo -> Trigger -> StateT BotState IO Trigger
 doTrigger mi trig@(Trigger test _)
