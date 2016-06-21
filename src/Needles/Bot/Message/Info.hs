@@ -34,18 +34,6 @@ import           Data.Text                    (Text, uncons, unpack)
 import           Needles.Bot.Message.In.Parse
 import           Needles.Bot.Trigger
 
-
-
-defaultMInfo :: MessageInfo
-defaultMInfo =
-  MessageInfo { mType   = MTUnknown
-              , what    = ""
-              , who     = ""
-              , rank    = ' '
-              , mRoom   = ""
-              , respond = const (return ())
-              }
-
 displayMInfo :: MessageInfo -> String
 displayMInfo mi = mTyp ++
                   "|User: " ++ mUser ++
@@ -57,37 +45,16 @@ displayMInfo mi = mTyp ++
         mRank = rank mi : []
         mWhat = unpack $ what mi
 
-decoupleName :: Text -> (Char, Text)
-decoupleName name = maybe (' ', "") id (uncons name)
+decoupleName :: Text -> User
+decoupleName name = maybe (User "" ' ') (uncurry $ flip User) (uncons name)
 
 makeMInfo :: Message -> Maybe MessageInfo
-makeMInfo (Chat r _ user mess) =
-  let (userrank, username) = decoupleName user
-  in Just
-     defaultMInfo { mType   = MTChat
-                  , what    = mess
-                  , who     = username
-                  , rank    = userrank
-                  , mRoom   = r
-                  , respond = sendChat r
-                  }
+makeMInfo (Chat r _ userstring mess) =
+  let user = decoupleName userstring
+  in Just (MIChat (Room r) user mess)
 makeMInfo (Pm u w) =
-  let (userrank, username) = decoupleName u
-  in Just
-     defaultMInfo { mType   = MTPm
-                  , what    = w
-                  , who     = username
-                  , rank    = userrank
-                  , respond = sendPm u
-                  }
-makeMInfo (Raw r w) = Just
-  defaultMInfo { mType = MTRaw
-               , what  = w
-               , mRoom = r
-               }
-makeMInfo (Base w) =
-  Just defaultMInfo { mType = MTBase
-                    , what = w
-                    } 
-
+  let user = decoupleName u
+  in Just (MIPm user w)
+makeMInfo (Raw r w) = Just (MIRaw (Room r) w)
+makeMInfo (Base w) = Just (MIBase w)
 makeMInfo _ = Nothing

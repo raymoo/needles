@@ -33,6 +33,15 @@ Portability : ghc
 
 module Needles.Bot.Trigger (
                              MessageInfo(..)
+                           , Room(..)
+                           , User(..)
+                             -- * Compatibility
+                           , mType
+                           , what
+                           , who
+                           , rank
+                           , mRoom
+                           , respond
                            , MessageType(..)
                              -- * Triggers
                            , Trigger
@@ -72,6 +81,50 @@ import           Data.Text                        (Text, append)
 import qualified Data.Text                        as T
 import qualified Data.Text.IO                     as TIO (putStrLn)
 import           Needles.Bot.Types
+
+
+mType :: MessageInfo -> MessageType
+mType (MIChat _ _ _) = MTChat
+mType (MIPm _ _) = MTPm
+mType (MIRaw _ _) = MTRaw
+mType (MIBase _) = MTBase
+mType MIUnknown = MTUnknown
+
+what :: MessageInfo -> Text
+what (MIChat _ _ w) = w
+what (MIPm _ w) = w
+what (MIRaw _ w) = w
+what (MIBase w) = w
+what MIUnknown = ""
+
+who :: MessageInfo -> Text
+who (MIChat _ w _) = userName w
+who (MIPm w _) = userName w
+who (MIRaw _ _) = ""
+who (MIBase _) = ""
+who MIUnknown = ""
+
+rank :: MessageInfo -> Char
+rank (MIChat _ w _) = userRank w
+rank (MIPm w _) = userRank w
+rank (MIRaw _ _) = ' '
+rank (MIBase _) = ' '
+rank MIUnknown = ' '
+
+mRoom :: MessageInfo -> Text
+mRoom (MIChat r _ _) = roomName r
+mRoom (MIPm _ _) = ""
+mRoom (MIRaw r _) = roomName r
+mRoom (MIBase _) = ""
+mRoom MIUnknown = ""
+
+respond :: MessageInfo -> Text -> TriggerAct a b ()
+respond (MIChat r _ _) = sendChat (roomName r)
+respond (MIPm w _) = sendPm (userName w)
+respond (MIRaw _ _) = const (return ())
+respond (MIBase _) = const (return ())
+respond MIUnknown = const (return ())
+
 
 -- | A 'ProtoTrigger' is a trigger that is not ready to be used. The type
 -- parameters are the same as the first two of 'TriggerAct'.

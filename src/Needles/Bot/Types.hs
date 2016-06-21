@@ -36,6 +36,8 @@ module Needles.Bot.Types (
                          , Configuration(..)
                          , MessageType(..)
                          , MessageInfo(..)
+                         , Room(..)
+                         , User(..)
                          ) where
 
 import           Control.Applicative
@@ -66,14 +68,18 @@ data MessageType = MTChat
                  | MTUnknown
                  deriving (Show, Eq)
 
+
+newtype Room = Room { roomName :: Text }
+data User = User { userName :: Text, userRank :: Char }
+
+
 -- | The info of a message
-data MessageInfo = MessageInfo { mType   :: MessageType
-                               , what    :: Text
-                               , who     :: Text
-                               , rank    :: Char
-                               , mRoom   :: Text
-                               , respond :: forall a b. Text -> TriggerAct a b ()
-                               }
+data MessageInfo = MIChat Room User Text
+                 | MIPm User Text
+                 | MIRaw Room Text
+                 | MIBase Text
+                 | MIUnknown
+
 
 -- | A trigger. They respond to certain messages by doing things.
 data Trigger =
