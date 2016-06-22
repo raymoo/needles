@@ -63,6 +63,8 @@ data BotState =
 -- | The type of a message
 data MessageType = MTChat
                  | MTPm
+                 | MTJoin
+                 | MTLeave
                  | MTRaw
                  | MTBase
                  | MTUnknown
@@ -76,6 +78,8 @@ data User = User { userName :: Text, userRank :: Char }
 -- | The info of a message
 data MessageInfo = MIChat Room User Text
                  | MIPm User Text
+                 | MIJoin Room User
+                 | MILeave Room User
                  | MIRaw Room Text
                  | MIBase Text
                  | MIUnknown

@@ -54,6 +54,8 @@ data Message = Unknown Text
              | ChallStr Integer String
              | Chat Room Time User What
              | Pm User What
+             | Join Room User
+             | Leave Room User
              | Timestamp Room Integer
              | Raw Text Text
              | Base Text
@@ -116,6 +118,12 @@ chatTime r = AP.string "|c:" *> (Chat r <$> dLex <*> mLex <*> contLex)
 chat :: Text -> Parser Message
 chat r = AP.string "|c" *> (Chat r 9999999999999999 <$> mLex <*> contLex)
 
+join :: Text -> Parser Message
+join r = AP.string "|j" *> (Join r <$> contLex)
+
+leave :: Text -> Parser Message
+leave r = AP.string "|l" *> (Leave r <$> contLex)
+
 raw :: Text -> Parser Message
 raw r = AP.string "|raw" *> (Raw r <$> contLex)
 
@@ -146,6 +154,8 @@ message r = AP.choice parsers <|> baseStr
                          ]
         roomParsers = map ($ r) [ chatTime
                                 , chat
+                                , join
+                                , leave
                                 , raw
                                 , time
                                 ]

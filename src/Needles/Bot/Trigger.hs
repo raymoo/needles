@@ -86,6 +86,8 @@ import           Needles.Bot.Types
 mType :: MessageInfo -> MessageType
 mType (MIChat _ _ _) = MTChat
 mType (MIPm _ _) = MTPm
+mType (MIJoin _ _) = MTJoin
+mType (MILeave _ _) = MTLeave
 mType (MIRaw _ _) = MTRaw
 mType (MIBase _) = MTBase
 mType MIUnknown = MTUnknown
@@ -95,35 +97,33 @@ what (MIChat _ _ w) = w
 what (MIPm _ w) = w
 what (MIRaw _ w) = w
 what (MIBase w) = w
-what MIUnknown = ""
+what _ = ""
 
 who :: MessageInfo -> Text
 who (MIChat _ w _) = userName w
 who (MIPm w _) = userName w
-who (MIRaw _ _) = ""
-who (MIBase _) = ""
-who MIUnknown = ""
+who (MIJoin _ u) = userName u
+who (MILeave _ u) = userName u
+who _ = ""
 
 rank :: MessageInfo -> Char
 rank (MIChat _ w _) = userRank w
 rank (MIPm w _) = userRank w
-rank (MIRaw _ _) = ' '
-rank (MIBase _) = ' '
-rank MIUnknown = ' '
+rank (MIJoin _ u) = userRank u
+rank (MILeave _ u) = userRank u
+rank _ = ' '
 
 mRoom :: MessageInfo -> Text
 mRoom (MIChat r _ _) = roomName r
-mRoom (MIPm _ _) = ""
+mRoom (MIJoin r _) = roomName r
+mRoom (MILeave r _) = roomName r
 mRoom (MIRaw r _) = roomName r
-mRoom (MIBase _) = ""
-mRoom MIUnknown = ""
+mRoom _ = ""
 
 respond :: MessageInfo -> Text -> TriggerAct a b ()
 respond (MIChat r _ _) = sendChat (roomName r)
 respond (MIPm w _) = sendPm (userName w)
-respond (MIRaw _ _) = const (return ())
-respond (MIBase _) = const (return ())
-respond MIUnknown = const (return ())
+respond _ = const (return ())
 
 
 -- | A 'ProtoTrigger' is a trigger that is not ready to be used. The type
