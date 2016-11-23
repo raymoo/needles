@@ -34,7 +34,7 @@ library
                      , Needles.Bot.Message.Info
                      , Needles.Bot.Message.Handle
   -- other-extensions:    
-  build-depends:       base >=4.7 && <4.9
+  build-depends:       base >=4.8 && <4.9
                      , text >=1.2 && <1.3
                      , HTTP >=4000.2 && <4000.3
                      , json >=0.9 && <0.10

@@ -119,10 +119,10 @@ chat :: Text -> Parser Message
 chat r = AP.string "|c" *> (Chat r 9999999999999999 <$> mLex <*> contLex)
 
 join :: Text -> Parser Message
-join r = AP.string "|j" *> (Join r <$> contLex)
+join r = AP.string "|J" *> (Join r <$> contLex)
 
 leave :: Text -> Parser Message
-leave r = AP.string "|l" *> (Leave r <$> contLex)
+leave r = AP.string "|L" *> (Leave r <$> contLex)
 
 raw :: Text -> Parser Message
 raw r = AP.string "|raw" *> (Raw r <$> contLex)

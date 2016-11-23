@@ -47,16 +47,18 @@ import           Needles.Bot.Types
 
 
 -- Runs all the triggers in a bot
-passTriggers :: Message -> StateT BotState IO ()
+passTriggers :: Message -> StateT Session IO ()
 passTriggers m = do
   case makeMInfo m of
    Nothing -> liftIO $ putStrLn "Unhandled Message"
    Just mi -> do
-     trigs <- bTriggers <$> get
+     trigs <- sTriggers <$> get
      newTriggers <- mapM (doTrigger mi) trigs
-     get >>= ($!) put .  (\bState -> bState { bTriggers = newTriggers })
+     bstate <- fmap sBotState get
+     let newBstate = bstate { bTriggers = newTriggers }
+     get >>= ($!) put .  (\sstate -> sstate { sBotState = newBstate })
 
-doTrigger :: MessageInfo -> Trigger -> StateT BotState IO Trigger
+doTrigger :: MessageInfo -> Trigger -> StateT Session IO Trigger
 doTrigger mi trig@(Trigger test _)
   | test mi = tryTrigger mi trig
   | otherwise = return trig
@@ -68,37 +70,37 @@ printError mi e = do
   putStrLn $ "Error:"
   print e
 
-tryTrigger :: MessageInfo -> Trigger -> StateT BotState IO Trigger
+tryTrigger :: MessageInfo -> Trigger -> StateT Session IO Trigger
 tryTrigger mi trig@(Trigger _ act) = do
-  bstate <- get
-  (res, bstate') <- liftIO $
-                    catch (runStateT (act mi) bstate)
+  sstate <- get
+  (res, sstate') <- liftIO $
+                    catch (runStateT (act mi) sstate)
                     (\e -> do printError mi (e :: SomeException)
-                              return (trig, bstate))
-  put bstate'
+                              return (trig, sstate))
+  put sstate'
   return res
 
 -- | Main handler
-handleBS :: ByteString -> StateT BotState IO ()
+handleBS :: ByteString -> StateT Session IO ()
 handleBS = mapM_ handleMessage . parseMessage
 
-handleMessage :: Message -> StateT BotState IO ()
+handleMessage :: Message -> StateT Session IO ()
 handleMessage (Unknown m) = liftIO $ putStrLn "Unknown Message: " >> T.putStrLn m
 handleMessage (ChallStr key str) = do
   liftIO $ putStrLn "Received Challenge - Logging in"
-  bstate <- get
-  let loginfo = LoginInfo (bName bstate) (bPass bstate)
+  sstate <- get
+  let loginfo = LoginInfo (sName sstate) (sPass sstate)
       challenge = Challenge (show key) str
   result <- liftIO $ getAssertion loginfo challenge
   case result of
    Nothing -> liftIO $ putStrLn "Failed to log in."
    Just assertion ->
-     let com = pack $ "|/trn " ++ (bName bstate) ++ ",0," ++ assertion
+     let com = pack $ "|/trn " ++ (sName sstate) ++ ",0," ++ assertion
      in do
-       liftIO $ bMessChan bstate com
+       liftIO $ sMessChan sstate com
        liftIO $ putStrLn "Logged In"
        liftIO $ putStrLn "Joining Rooms..."
-       get >>= mapM_ joinRoom . cRooms . bConfig
+       get >>= mapM_ joinRoom . cRooms . sConfig
        liftIO $ putStrLn "Done."
 handleMessage m@(Chat r t _ _) = do
   joinTime <- getTimestamp r
@@ -108,17 +110,19 @@ handleMessage m@(Chat r t _ _) = do
 handleMessage (Timestamp r t) = putTimestamp r t
 handleMessage m = passTriggers m
 
-getTimestamp :: Text -> StateT BotState IO Integer
+getTimestamp :: Text -> StateT Session IO Integer
 getTimestamp r =
-  findWithDefault 0 r . bTimestamps <$> get
+  findWithDefault 0 r . sTimestamps <$> get
 
-putTimestamp :: Text -> Integer -> StateT BotState IO ()
-putTimestamp r t =
-  modify (\bstate ->
-           bstate { bTimestamps = insert r t (bTimestamps bstate) })
+putTimestamp :: Text -> Integer -> StateT Session IO ()
+putTimestamp r t = do
+  sstate <- get
+  put $ sstate { sBotState = (sBotState sstate){
+                   bTimestamps = insert r t (sTimestamps sstate)
+               }}
 
-joinRoom :: String -> StateT BotState IO ()
+joinRoom :: String -> StateT Session IO ()
 joinRoom r = do
-  chan <- bMessChan <$> get
+  chan <- sMessChan <$> get
   liftIO $ chan com
   where com = pack $ "|/join " ++ r

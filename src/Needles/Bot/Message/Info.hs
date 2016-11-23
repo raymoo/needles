@@ -55,6 +55,8 @@ makeMInfo (Chat r _ userstring mess) =
 makeMInfo (Pm u w) =
   let user = decoupleName u
   in Just (MIPm user w)
+makeMInfo (Join r u) = Just (MIJoin (Room r) (decoupleName u))
+makeMInfo (Leave r u) = Just (MILeave (Room r) (decoupleName u))
 makeMInfo (Raw r w) = Just (MIRaw (Room r) w)
 makeMInfo (Base w) = Just (MIBase w)
 makeMInfo _ = Nothing

@@ -31,6 +31,12 @@ Portability : ghc
 {-# LANGUAGE RankNTypes #-}
 module Needles.Bot.Types (
                            BotState(..)
+                         , Session(..)
+                         , sName
+                         , sPass
+                         , sTriggers
+                         , sConfig
+                         , sTimestamps
                          , Trigger(..)
                          , TriggerAct(..)
                          , Configuration(..)
@@ -53,12 +59,34 @@ import qualified Network.WebSockets               as WS
 data BotState =
   BotState { bName       :: String
            , bPass       :: String
-           , bConn       :: WS.Connection
            , bTriggers   :: [Trigger] -- ^ The triggers in use
            , bConfig     :: Configuration
-           , bMessChan   :: Text -> IO ()
            , bTimestamps :: Map Text Integer -- ^ The enter time of each room
            }
+
+data Session =
+  Session { sBotState :: BotState
+          , sConn :: WS.Connection
+          , sMessChan :: Text -> IO ()
+          }
+
+inS :: (BotState -> a) -> Session -> a
+inS f s = f $ sBotState s
+
+sName :: Session -> String
+sName = inS bName
+
+sPass :: Session -> String
+sPass = inS bPass
+
+sTriggers :: Session -> [Trigger]
+sTriggers = inS bTriggers
+
+sConfig :: Session -> Configuration
+sConfig = inS bConfig
+
+sTimestamps :: Session -> Map Text Integer
+sTimestamps = inS bTimestamps
 
 -- | The type of a message
 data MessageType = MTChat
@@ -88,7 +116,7 @@ data MessageInfo = MIChat Room User Text
 -- | A trigger. They respond to certain messages by doing things.
 data Trigger =
   Trigger { trigTest :: MessageInfo -> Bool
-          , trigAct  :: MessageInfo -> StateT BotState IO (Trigger)
+          , trigAct  :: MessageInfo -> StateT Session IO (Trigger)
           }
 
 -- | An effect that a 'Trigger' might produce.

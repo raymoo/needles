@@ -45,41 +45,43 @@ import Data.IORef
 -- | Runs a bot with the given 'Configuration'
 runBot :: Configuration -> IO ()
 runBot config = do
-  WS.runClient (cServer config) (cPort config) (cPath config) (bot config)
+  backup <- newIORef $ configuredBot config
+  connectBot config backup
 
-bot :: Configuration -> WS.ClientApp ()
-bot c conn = do
+connectBot :: Configuration -> IORef BotState -> IO ()
+connectBot config backup =
+  WS.runClient (cServer config) (cPort config) (cPath config) (bot backup)
+  `catch` handleProblem config backup
+
+configuredBot :: Configuration -> BotState
+configuredBot config = BotState { bName = cUsername config
+                                , bPass = cPassword config
+                                , bTriggers = cTriggers config
+                                , bConfig = config
+                                , bTimestamps = empty
+                                }
+
+handleProblem :: Configuration -> IORef BotState -> SomeException -> IO ()
+handleProblem config backup e = do
+  putStrLn . displayException $ e
+  connectBot config backup
+
+bot :: IORef BotState -> WS.ClientApp ()
+bot backup conn = do
   putStrLn "Connected"
+  bstate <- readIORef backup
   (chan, _) <- mkPSQueue conn (const $ return () :: SomeException -> IO ())
-  let newBot = BotState { bName = cUsername c
-                        , bPass = cPassword c
-                        , bConn = conn
-                        , bTriggers = cTriggers c
-                        , bConfig = c
-                        , bMessChan = chan
-                        , bTimestamps = empty
-                        }
-  backup <- newIORef newBot
-  catch (loop backup newBot) (reinitialize backup)
+  let newSession = Session { sBotState = bstate
+                           , sConn = conn
+                           , sMessChan = chan
+                           }
+  loop backup newSession
 
-loop :: IORef BotState -> BotState -> IO ()
-loop backup thebot = flip evalStateT thebot . forever $ do
+loop :: IORef BotState -> Session -> IO ()
+loop backup session = flip evalStateT session . forever $ do
   mess <- getData
   handleBS mess
-  get >>= liftIO . writeIORef backup
+  get >>= liftIO . writeIORef backup . sBotState
 
-getData :: StateT BotState IO ByteString
-getData = get >>= liftIO . WS.receiveData . bConn
-
-reinitialize :: IORef BotState -> SomeException -> IO ()
-reinitialize backup _ = do
-  reclaim <- readIORef backup
-  let config = bConfig reclaim
-  catch (WS.runClient (cServer config) (cPort config) (cPath config) (fixBot reclaim)) (reinitialize backup)
-  where fixBot oldBot conn = do
-          (queue, _) <- mkPSQueue conn (const $ return () :: SomeException -> IO ())
-          let newBot = oldBot { bConn = conn
-                              , bMessChan = queue
-                              }
-          writeIORef backup newBot
-          loop backup newBot
+getData :: StateT Session IO ByteString
+getData = get >>= liftIO . WS.receiveData . sConn

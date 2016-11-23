@@ -29,6 +29,7 @@ Portability : ghc
 
 module Needles.Bot.State (
                            BotState(..)
+                         , Session(..)
                          ) where
 
 import           Needles.Bot.Types

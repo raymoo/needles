@@ -149,13 +149,13 @@ mkTrigger name pt@(ProtoTrigger p action) s = Trigger p actFun
 mkTrigger_ :: String -> ProtoTrigger () b -> Trigger
 mkTrigger_ name pt = mkTrigger name pt ()
 
-bakeAction :: String -> TriggerAct a b c -> a -> StateT BotState IO (c, a)
+bakeAction :: String -> TriggerAct a b c -> a -> StateT Session IO (c, a)
 bakeAction _ (Send text) a = do
-  sender <- bMessChan <$> get
+  sender <- sMessChan <$> get
   liftIO $ mapM_ sender (T.lines text)
   return ((), a)
 bakeAction name (Log str) a = do
-  logger <- cLogger . bConfig <$> get
+  logger <- cLogger . sConfig <$> get
   let message = T.pack (name ++ ": ") `T.append` str
   liftIO $ logger message
   return ((), a)
